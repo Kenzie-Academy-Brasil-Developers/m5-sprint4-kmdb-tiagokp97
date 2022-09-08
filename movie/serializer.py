@@ -1,4 +1,5 @@
-from genre.models import Genre, GenreSerializer
+from genre.models import Genre
+from genre.serializer import GenreSerializer
 from rest_framework import serializers, status
 
 from movie.models import Movie
@@ -12,16 +13,16 @@ class MovieSerializer(serializers.Serializer):
     premiere = serializers.DateField()
     classification = serializers.IntegerField()
     synopsis = serializers.CharField()
-    genres = GenreSerializer(many=True)
+    genre = GenreSerializer(many=True)
 
     def create(self, validated_data: dict):
 
         genres = validated_data.pop("genres")
 
-        genres_data = [Genre.objects.get_or_create(**genre)[0] for genre in genres]
+        genre_data = [Genre.objects.get_or_create(**genre)[0] for genre in genres]
 
         movie = Movie.objects.create(**validated_data)
-        movie.genres.set(genres_data)
+        movie.genres.set(genre_data)
 
         return movie
 
@@ -29,12 +30,12 @@ class MovieSerializer(serializers.Serializer):
 
         for key, value in validated_data.items():
 
-            if key == "genres":
-                genres_data = [
+            if key == "genre":
+                genre_data = [
                     Genre.objects.get_or_create(**genre)[0] for genre in value
                 ]
 
-                genre_db.genres.set(genres_data)
+                genre_db.genre.set(genre_data)
                 continue
 
             setattr(genre_db, key, value)
